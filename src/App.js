@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import WebPlayback from './WebPlayback'
 import Login from './Login'
+import './App.css';
 
 function App() {
 
@@ -9,9 +10,13 @@ function App() {
   useEffect(() => {
 
     async function getToken() {
-      const response = await fetch('/auth/token');
-      const json = await response.json();
-      setToken(json.access_token);
+      try {
+        const response = await fetch('/auth/token');
+        const json = await response.json();
+        setToken(json.access_token);
+      } catch(error) {
+        console.error("Error retrieving Spotify token.", error);
+      }
     }
 
     getToken();
@@ -20,7 +25,7 @@ function App() {
 
   return (
     <>
-        { (token === '') ? <Login/> : <WebPlayback token={token} /> }
+        { !token ? <Login/> : <WebPlayback token={token} /> }
     </>
   );
 }
