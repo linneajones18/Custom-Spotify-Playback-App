@@ -97,28 +97,30 @@ function WebPlayback(props) {
     // get random colors for background gradient
     // return getHexColorFromUrl(imageUrl, targetX, targetY);
 
-    const albumURL = current_track.album.images[0];
-    const albumImg = new Image();
-    albumImg.src = albumURL;
+    // const albumURL = current_track.album.images[0];
+    // const albumImg = new Image();
+    // albumImg.src = albumURL;
 
-    albumImg.onload = () => {
-        const width = albumImg.width;
-        const height = albumImg.height;
-    }
+    // albumImg.onload = () => {
+    //     const width = albumImg.width;
+    //     const height = albumImg.height;
+    // }
 
-    const pixels = [];
+    // const pixels = [];
 
-    // get 5 random pixels
-    const pixel1 = toHex(ctx.getImageData(canvas.width / 4, canvas.height / 4, 1, 1).data);
-    const pixel2 = toHex(ctx.getImageData(canvas.width / 4, canvas.height / 4 * 3, 1, 1).data);
-    const pixel3 = toHex(ctx.getImageData(canvas.width / 2, canvas.height / 2, 1, 1).data);
-    const pixel4 = toHex(ctx.getImageData(canvas.width / 4 * 3, canvas.height / 4, 1, 1).data);
-    const pixel5 = toHex(ctx.getImageData(canvas.width / 4 * 3, canvas.height / 4 * 3, 1, 1).data);
+    // // get 5 random pixels
+    // const pixel1 = toHex(ctx.getImageData(canvas.width / 4, canvas.height / 4, 1, 1).data);
+    // const pixel2 = toHex(ctx.getImageData(canvas.width / 4, canvas.height / 4 * 3, 1, 1).data);
+    // const pixel3 = toHex(ctx.getImageData(canvas.width / 2, canvas.height / 2, 1, 1).data);
+    // const pixel4 = toHex(ctx.getImageData(canvas.width / 4 * 3, canvas.height / 4, 1, 1).data);
+    // const pixel5 = toHex(ctx.getImageData(canvas.width / 4 * 3, canvas.height / 4 * 3, 1, 1).data);
 
     return (
         <>
             {/* style had to be in-line here to use backgroundimage - everything else is in styles.css */}
-            <div id="player-container" style={{backgroundImage: `radialGradient(${pixel1}, ${pixel2}, ${pixel3}, ${pixel4}, ${pixel5})`}}>
+            <div id="player-container" 
+                // style={{backgroundImage: `radialGradient(${pixel1}, ${pixel2}, ${pixel3}, ${pixel4}, ${pixel5})`}}
+            >
                 <div className="record">
                     <img src='/record.svg' alt="record disc"/>
                     <img src='/us.jpg' alt="Linnea and Aidan"/>
