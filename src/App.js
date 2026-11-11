@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import WebPlayback from './WebPlayback'
+import WebPlayback from './WebPlayback';
 import Login from './Login'
-import './App.css';
 
 function App() {
 

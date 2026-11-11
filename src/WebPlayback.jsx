@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import './styles.css';
 
 const track = {
     name: "",
@@ -93,9 +94,53 @@ function WebPlayback(props) {
 
     }, []);
 
+    // get random colors for background gradient
+    // return getHexColorFromUrl(imageUrl, targetX, targetY);
+
+    const albumURL = current_track.album.images[0];
+    const albumImg = new Image();
+    albumImg.src = albumURL;
+
+    albumImg.onload = () => {
+        const width = albumImg.width;
+        const height = albumImg.height;
+    }
+
+    const pixels = [];
+
+    // get 5 random pixels
+    const pixel1 = toHex(ctx.getImageData(canvas.width / 4, canvas.height / 4, 1, 1).data);
+    const pixel2 = toHex(ctx.getImageData(canvas.width / 4, canvas.height / 4 * 3, 1, 1).data);
+    const pixel3 = toHex(ctx.getImageData(canvas.width / 2, canvas.height / 2, 1, 1).data);
+    const pixel4 = toHex(ctx.getImageData(canvas.width / 4 * 3, canvas.height / 4, 1, 1).data);
+    const pixel5 = toHex(ctx.getImageData(canvas.width / 4 * 3, canvas.height / 4 * 3, 1, 1).data);
+
     return (
         <>
-            <div className="container">
+            {/* style had to be in-line here to use backgroundimage - everything else is in styles.css */}
+            <div id="player-container" style={{backgroundImage: `radialGradient(${pixel1}, ${pixel2}, ${pixel3}, ${pixel4}, ${pixel5})`}}>
+                <div className="record">
+                    <img src='/record.svg' alt="record disc"/>
+                    <img src='/us.jpg' alt="Linnea and Aidan"/>
+                </div>
+
+                <div id="button-container">
+                    <button className="btn-spotify" onClick={() => { player.previousTrack() }} >
+                        &lt;&lt;
+                    </button>
+
+                    <button className="btn-spotify" onClick={() => { player.togglePlay() }} >
+                        { is_paused ? "PLAY" : "PAUSE" }
+                    </button>
+
+                    <button className="btn-spotify" onClick={() => { player.nextTrack() }} >
+                        &gt;&gt;
+                    </button>
+                </div>
+
+            </div>
+
+            {/* <div className="container">
                 <div className="main-wrapper">
                     <img src={current_track.album.images[0].url} 
                         className="now-playing__cover" alt="" />
@@ -110,20 +155,9 @@ function WebPlayback(props) {
                                     current_track.artists[0].name
                         }</div>
                     </div>
-                    <button className="btn-spotify" onClick={() => { player.previousTrack() }} >
-                        &lt;&lt;
-                    </button>
-
-                    <button className="btn-spotify" onClick={() => { player.togglePlay() }} >
-                        { is_paused ? "PLAY" : "PAUSE" }
-                    </button>
-
-                    <button className="btn-spotify" onClick={() => { player.nextTrack() }} >
-                        &gt;&gt;
-                    </button>
 
                 </div>
-            </div>
+            </div> */}
         </>
     )
 }
