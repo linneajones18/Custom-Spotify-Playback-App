@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import './styles.css';
+import { getPaletteSync } from 'colorthief';
 
 const track = {
     name: "",
@@ -13,12 +14,26 @@ const track = {
     ]
 }
 
+function loadImg(url) {
+    return new Promise((resolve, reject) => {
+        const img = new Image();
+
+        img.crossOrigin = "Anonymous";
+
+        img.onload = () => resolve(img);
+        img.onerror = () => reject(new Error(`Failed to load image at url: ${url}`))
+
+        img.src = url;
+    });
+}
+
 function WebPlayback(props) {
 
     const [player, setPlayer] = useState(undefined);
     const [is_paused, setPaused] = useState(false);
     const [is_active, setActive] = useState(false);
     const [current_track, setTrack] = useState(track);
+    const [palette, setPalette] = useState([]);
 
 
     useEffect(() => {
@@ -94,36 +109,49 @@ function WebPlayback(props) {
 
     }, []);
 
+    useEffect(() => {
+        console.log("Track changed: ", current_track);
+        console.log("image url: ", current_track.album.images[0].url);
+
+        async function getColors() {
+            try {
+                const albumImg = await loadImg(current_track.album.images[0].url);
+                const palette = getPaletteSync(albumImg, { colorCount: 2 });
+                setPalette(palette);
+            } catch(error) {
+                console.error(error);
+            }
+        }
+
+        if(current_track.album.images[0].url) {
+            getColors();
+        }
+        else {
+            console.log("No available image url");
+        }
+    }, [current_track]);
+
     // get random colors for background gradient
-    // return getHexColorFromUrl(imageUrl, targetX, targetY);
 
-    // const albumURL = current_track.album.images[0];
-    // const albumImg = new Image();
-    // albumImg.src = albumURL;
 
-    // albumImg.onload = () => {
-    //     const width = albumImg.width;
-    //     const height = albumImg.height;
-    // }
+    var paletteString = "";
+    palette.forEach(color => {
+        paletteString += color + ", ";
+    });
 
-    // const pixels = [];
-
-    // // get 5 random pixels
-    // const pixel1 = toHex(ctx.getImageData(canvas.width / 4, canvas.height / 4, 1, 1).data);
-    // const pixel2 = toHex(ctx.getImageData(canvas.width / 4, canvas.height / 4 * 3, 1, 1).data);
-    // const pixel3 = toHex(ctx.getImageData(canvas.width / 2, canvas.height / 2, 1, 1).data);
-    // const pixel4 = toHex(ctx.getImageData(canvas.width / 4 * 3, canvas.height / 4, 1, 1).data);
-    // const pixel5 = toHex(ctx.getImageData(canvas.width / 4 * 3, canvas.height / 4 * 3, 1, 1).data);
+    paletteString = paletteString.slice(0, -2);
+    console.log("palette = ", paletteString);
+    
 
     return (
         <>
             {/* style had to be in-line here to use backgroundimage - everything else is in styles.css */}
             <div id="player-container" 
-                // style={{backgroundImage: `radialGradient(${pixel1}, ${pixel2}, ${pixel3}, ${pixel4}, ${pixel5})`}}
+                style={{backgroundImage: `radial-gradient(${palette[0]} 50%, ${palette[1]} 75%, ${palette[2]})`}}
             >
                 <div className="record">
                     <img src='/record.svg' alt="record disc"/>
-                    <img src='/us.jpg' alt="Linnea and Aidan"/>
+                    {/* <img src='/us.jpg' alt="Linnea and Aidan"/> */}
                 </div>
 
                 <div id="button-container">
