@@ -1,3 +1,107 @@
+* {
+    box-sizing: border-box;
+}
+
+html, body {
+    padding: 0;
+    margin: 0;
+}
+
+#root-container {
+    height: 100vh;
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+}
+
+#background-blur {
+    backdrop-filter: blur(45px);
+    height: 100vh;
+}
+
 #player-container {
-    height: 1000px;
+    position: relative;
+    top: 3%;
+    margin: 0 auto;
+    width: 85vh;
+    height: 95vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0;
+    background-color: rgba(255, 255, 255, 0.2);
+    border-radius: 10%;
+    /* border: 1px solid grey; */
+}
+
+@keyframes rotate {
+    from {
+        transform: rotate(0deg);
+    }
+    to {
+        transform: rotate(360deg);
+    }
+}
+
+#custom-record-graphic {
+    margin: 0;
+    display: grid;
+    width: 75vh;
+    aspect-ratio: 1;
+    place-items: center;
+
+    animation: rotate 18s linear infinite;
+    animation-play-state: paused;
+}
+
+#custom-record-graphic.playing {
+    animation-play-state: running;
+}
+
+#record-disc, #record-image {
+    grid-column: 1;
+    grid-row: 1;
+}
+
+#record-disc {
+    width: 100%;
+    height: auto;
+    z-index: 1;
+}
+
+#record-image {
+    align-self: center;
+    width: 33%;
+    aspect-ratio: 1;
+    object-fit: cover;
+    border-radius: 50%;
+    z-index: 2;
+    border: 2px solid white;
+}
+
+#button-container {
+    display: flex;
+    gap: 10px;
+}
+
+.btn {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-size: 6rem;
+    width: 20vh;
+    height: 15vh;
+    border-radius: 10px;
+    border: none;
+    background: #686170;
+}
+
+.btn > * {
+    position: relative;
+    top: -10%;
+    color: white;
+}
+
+.traverse {
+
 }

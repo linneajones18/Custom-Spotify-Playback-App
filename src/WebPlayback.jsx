@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import './styles.css';
 import { getPaletteSync } from 'colorthief';
 
@@ -33,8 +33,9 @@ function WebPlayback(props) {
     const [is_paused, setPaused] = useState(false);
     const [is_active, setActive] = useState(false);
     const [current_track, setTrack] = useState(track);
-    const [palette, setPalette] = useState([]);
 
+    const [palette, setPalette] = useState([]);
+    const record = useRef(null);
 
     useEffect(() => {
 
@@ -72,14 +73,20 @@ function WebPlayback(props) {
             });
 
             // Listen for changes in playback
-            player.addListener('player_state_changed', state => {
-                console.log('Playback state changed:', state);
-            });
-
             player.addListener('player_state_changed', ( state => {
-
+                // console.log('Playback state changed:', state);
+                console.log("Paused:", state.paused);   
                 if (!state) {
                     return;
+                }
+
+ 
+                if(!state.paused) {
+                    console.log("hello there");
+                    record.current.classList.add('playing');
+                }
+                else {
+                    record.current.classList.remove('playing');
                 }
 
                 setTrack(state.track_window.current_track);
@@ -110,8 +117,6 @@ function WebPlayback(props) {
     }, []);
 
     useEffect(() => {
-        console.log("Track changed: ", current_track);
-        console.log("image url: ", current_track.album.images[0].url);
 
         async function getColors() {
             try {
@@ -140,54 +145,38 @@ function WebPlayback(props) {
     });
 
     paletteString = paletteString.slice(0, -2);
-    console.log("palette = ", paletteString);
     
 
     return (
         <>
             {/* style had to be in-line here to use backgroundimage - everything else is in styles.css */}
-            <div id="player-container" 
-                style={{backgroundImage: `radial-gradient(${palette[0]} 50%, ${palette[1]} 75%, ${palette[2]})`}}
-            >
-                <div className="record">
-                    <img src='/record.svg' alt="record disc"/>
-                    {/* <img src='/us.jpg' alt="Linnea and Aidan"/> */}
-                </div>
+            <div id="root-container" 
+                // style={{backgroundImage: `radial-gradient(${palette[1]} 25%, ${palette[0]})`}}
+                style= {{backgroundImage: `url(${current_track?.album?.images?.[0]?.url || `radial-gradient(${palette[1]} 25%, ${palette[0]})`})`}}                 
+            >   <div id="background-blur">
+                    <div id="player-container">
+                        <div id="custom-record-graphic" ref={record}>
+                            <img id="record-disc" src='/record2.svg' alt="record disc"/>
+                            <img id="record-image" src='/us.jpg' alt="Linnea and Aidan"/>
+                        </div>
 
-                <div id="button-container">
-                    <button className="btn-spotify" onClick={() => { player.previousTrack() }} >
-                        &lt;&lt;
-                    </button>
+                        <div id="button-container">
+                            <button className="traverse btn" onClick={() => { player.previousTrack() }} >
+                                <p>⏮</p>
+                            </button>
 
-                    <button className="btn-spotify" onClick={() => { player.togglePlay() }} >
-                        { is_paused ? "PLAY" : "PAUSE" }
-                    </button>
+                            <button id="play-pause-button" className='btn' onClick={() => { player.togglePlay() }} >
+                                <p>{ is_paused ? "▶" : "⏸" }</p>
+                            </button>
 
-                    <button className="btn-spotify" onClick={() => { player.nextTrack() }} >
-                        &gt;&gt;
-                    </button>
+                            <button className="traverse btn" onClick={() => { player.nextTrack() }} >
+                                <p>⏭</p>
+                            </button>
+                        </div>
+                    </div>
                 </div>
 
             </div>
-
-            {/* <div className="container">
-                <div className="main-wrapper">
-                    <img src={current_track.album.images[0].url} 
-                        className="now-playing__cover" alt="" />
-
-                    <div className="now-playing__side">
-                        <div className="now-playing__name">{
-                                    current_track.name
-                                    }
-                        </div>
-
-                        <div className="now-playing__artist">{
-                                    current_track.artists[0].name
-                        }</div>
-                    </div>
-
-                </div>
-            </div> */}
         </>
     )
 }
