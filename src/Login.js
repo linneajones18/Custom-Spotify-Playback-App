@@ -1,13 +1,11 @@
-
 import React from 'react';
+import './css/login.css';
 
 function Login() {
     return (
-        <div className="App">
+        <div id="login-container">
             <header className="App-header">
-                <a className="btn-spotify" href="/auth/login" >
-                    Login with Spotify 
-                </a>
+                <button id="login-btn" onClick={() => window.location.href = '/auth/login'}>Login</button>
             </header>
         </div>
     );

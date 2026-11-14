@@ -1,0 +1,24 @@
+#login-container {
+    background-color: #d0bfe3;
+    height: 100vh;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+#login-btn {
+    width: 50vh;
+    height: 20vh;
+    font-size: 6rem;
+    font-weight: bold;
+    font-family: BBH Bogle, sans-serif;
+    letter-spacing: 0.4rem;
+    border-radius: 30px;
+    border: 4px solid white;
+    color: white;
+    background-color: #401a69;
+}
+
+#login-btn:hover {
+    background-color: #2f154a;
+}

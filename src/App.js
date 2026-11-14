@@ -22,6 +22,7 @@ function App() {
 
   }, []);
 
+  // displays the login page if not logged in, otherwise displays webplayback page
   return (
     <>
         { !token ? <Login/> : <WebPlayback token={token} /> }

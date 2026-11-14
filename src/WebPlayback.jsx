@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import './styles.css';
+import './css/styles.css';
 import { getPaletteSync } from 'colorthief';
 
 const track = {
@@ -14,6 +14,14 @@ const track = {
     ]
 }
 
+const images = require.context(
+    '../public/record-photos',
+    false,
+    /\.(png|jpe?g|gif|webp)$/
+);
+
+const recordPhotos = images.keys().map(images);
+
 function loadImg(url) {
     return new Promise((resolve, reject) => {
         const img = new Image();
@@ -25,7 +33,7 @@ function loadImg(url) {
 
         img.src = url;
     });
-}
+}   
 
 function WebPlayback(props) {
 
@@ -36,85 +44,96 @@ function WebPlayback(props) {
 
     const [palette, setPalette] = useState([]);
     const record = useRef(null);
+    const playerRef = useRef(null);
+    const [imageIndex, setImageIndex] = useState(0);
 
     useEffect(() => {
-
-        // Load the Spotify Web Playback SDK
         const script = document.createElement("script");
         script.src = "https://sdk.scdn.co/spotify-player.js";
         script.async = true;
 
-        document.body.appendChild(script);
-
-        // Execute once the SDK has loaded
-        window.onSpotifyWebPlaybackSDKReady = () => {
-
-            const player = new window.Spotify.Player({
-                name: 'Web Playback SDK',
-
+        const initializePlayer = () => {
+            const spotifyPlayer = new window.Spotify.Player({
+                name: 'Spotify Display',
                 getOAuthToken: cb => {
                     cb(props.token);
                 },
-
                 volume: 0.5
             });
 
-            // Store the player instance
-            setPlayer(player);
+            // Save the actual instance
+            playerRef.current = spotifyPlayer;
+            setPlayer(spotifyPlayer);
 
-            // Listen for the player becoming ready
-            player.addListener('ready', ({ device_id }) => {
-                console.log('Ready with Device ID', device_id);
+            spotifyPlayer.addListener('ready', ({ device_id }) => {
+
+                fetch('https://api.spotify.com/v1/me/player', {
+                    method: 'PUT',
+                    headers: {
+                        Authorization: `Bearer ${props.token}`,
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        device_ids: [device_id],
+                        play: false
+                    })
+                })
+                .catch(error => console.error('Transfer error:', error));
             });
 
-            // Listen for the player going offline
-            player.addListener('not_ready', ({ device_id }) => {
-                console.log('Device ID has gone offline', device_id);
+            spotifyPlayer.addListener('not_ready', ({ device_id }) => {
+                console.log('Device disconnected:', device_id);
             });
 
-            // Listen for changes in playback
-            player.addListener('player_state_changed', ( state => {
-                // console.log('Playback state changed:', state);
-                console.log("Paused:", state.paused);   
+            spotifyPlayer.addListener('initialization_error', ({ message }) => {
+                console.error('Initialization error:', message);
+            });
+
+            spotifyPlayer.addListener('authentication_error', ({ message }) => {
+                console.error('Authentication error:', message);
+            });
+
+            spotifyPlayer.addListener('account_error', ({ message }) => {
+                console.error('Account error:', message);
+            });
+
+            spotifyPlayer.addListener('playback_error', ({ message }) => {
+                console.error('Playback error:', message);
+            });
+
+            spotifyPlayer.addListener('player_state_changed', (state) => {
                 if (!state) {
+                    setActive(false);
                     return;
                 }
 
- 
-                if(!state.paused) {
-                    console.log("hello there");
-                    record.current.classList.add('playing');
-                }
-                else {
-                    record.current.classList.remove('playing');
+                if (record.current) {
+                    record.current.classList.toggle('playing', !state.paused);
                 }
 
                 setTrack(state.track_window.current_track);
                 setPaused(state.paused);
+                setActive(true);
+            });
 
-
-                player.getCurrentState().then( state => { 
-                    (!state)? setActive(false) : setActive(true) 
-                });
-
-            }));
-
-
-            // Connect to Spotify
-            player.connect();
+            spotifyPlayer.connect();
         };
 
-        // Cleanup when the component unmounts
+        window.onSpotifyWebPlaybackSDKReady = initializePlayer;
+
+        document.body.appendChild(script);
+
         return () => {
-            if (player) {
-                player.disconnect();
+            window.onSpotifyWebPlaybackSDKReady = null;
+
+            if (playerRef.current) {
+                playerRef.current.disconnect();
+                playerRef.current = null;
             }
 
-            window.onSpotifyWebPlaybackSDKReady = null;
             script.remove();
         };
-
-    }, []);
+    }, [props.token]);
 
     useEffect(() => {
 
@@ -136,49 +155,54 @@ function WebPlayback(props) {
         }
     }, [current_track]);
 
-    // get random colors for background gradient
+    useEffect(() => {
+        if (current_track) {
+            setImageIndex(prevIndex => (prevIndex + 1) % recordPhotos.length);
+        }
+    }, [current_track?.id]);
 
-
-    var paletteString = "";
-    palette.forEach(color => {
-        paletteString += color + ", ";
-    });
-
-    paletteString = paletteString.slice(0, -2);
     
+    if(is_active) {
+        return (
+            <>
+                {/* style had to be in-line here to use backgroundimage - everything else is in styles.css */}
+                <div id="playback-container" 
+                    style= {{backgroundImage: `url(${current_track?.album?.images?.[0]?.url || `radial-gradient(${palette[1]} 25%, ${palette[0]})`})`}}                 
+                >   <div id="background-blur">
+                        <div id="player-container">
+                            <div id="custom-record-graphic" ref={record}>
+                                <img id="record-disc" src='/record2.svg' alt="record disc"/>
+                                <img id="record-image" src={recordPhotos[imageIndex]} alt="Linnea and Aidan"/>
+                            </div>
 
-    return (
-        <>
-            {/* style had to be in-line here to use backgroundimage - everything else is in styles.css */}
-            <div id="root-container" 
-                // style={{backgroundImage: `radial-gradient(${palette[1]} 25%, ${palette[0]})`}}
-                style= {{backgroundImage: `url(${current_track?.album?.images?.[0]?.url || `radial-gradient(${palette[1]} 25%, ${palette[0]})`})`}}                 
-            >   <div id="background-blur">
-                    <div id="player-container">
-                        <div id="custom-record-graphic" ref={record}>
-                            <img id="record-disc" src='/record2.svg' alt="record disc"/>
-                            <img id="record-image" src='/us.jpg' alt="Linnea and Aidan"/>
-                        </div>
+                            <div id="button-container">
+                                <button className="playback-btn" onClick={() => { player.previousTrack() }} >
+                                    <p>⏮</p>
+                                </button>
 
-                        <div id="button-container">
-                            <button className="traverse btn" onClick={() => { player.previousTrack() }} >
-                                <p>⏮</p>
-                            </button>
+                                <button className="playback-btn" onClick={() => {playerRef.current?.togglePlay().catch(error => console.error("Toggle error ", error))}} >
+                                    <p>{ is_paused ? "▶" : "⏸" }</p>
+                                </button>
 
-                            <button id="play-pause-button" className='btn' onClick={() => { player.togglePlay() }} >
-                                <p>{ is_paused ? "▶" : "⏸" }</p>
-                            </button>
-
-                            <button className="traverse btn" onClick={() => { player.nextTrack() }} >
-                                <p>⏭</p>
-                            </button>
-                        </div>
+                                <button className="playback-btn" onClick={() => { player.nextTrack() }} >
+                                    <p>⏭</p>
+                                </button>
+                            </div>
+                        </div>  
                     </div>
-                </div>
 
+                </div>
+            </>
+        )
+    }
+
+    else {
+        return (
+            <div id="waiting-container">
+            <h1>Connect your device, honey.</h1>
             </div>
-        </>
-    )
+        )
+    }
 }
 
 export default WebPlayback;
