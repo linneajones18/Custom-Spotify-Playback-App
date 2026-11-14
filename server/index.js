@@ -2,16 +2,18 @@ const express = require('express');
 const dotenv = require('dotenv');
 const path = require('path');
 
-const port = 5000
+dotenv.config();
 
-dotenv.config()
+const PORT = process.env.PORT || 5000;
+const REDIRECT_URI = process.env.SPOTIFY_REDIRECT_URI ||
+    'http://127.0.0.1:3000/auth/callback';
 
-var spotify_client_id = process.env.SPOTIFY_CLIENT_ID
-var spotify_client_secret = process.env.SPOTIFY_CLIENT_SECRET
+const spotify_client_id = process.env.SPOTIFY_CLIENT_ID;
+const spotify_client_secret = process.env.SPOTIFY_CLIENT_SECRET;
 
 let access_token = null;
 
-var app = express();
+const app = express();
 
 app.use(express.static(path.join(__dirname, '../build')));
 
@@ -30,7 +32,7 @@ app.get('/auth/callback', async (req, res) => {
             },
             body: new URLSearchParams({
                 code: code,
-                redirect_uri: 'http://127.0.0.1:3000/auth/callback',
+                redirect_uri: REDIRECT_URI,
                 grant_type: 'authorization_code'
             })
         });
@@ -41,7 +43,6 @@ app.get('/auth/callback', async (req, res) => {
             console.error('Spotify token error:', data);
             return res.status(response.status).json(data);
         }
-        access_token = data.access_token;
 
         access_token = data.access_token;
 
@@ -64,15 +65,11 @@ app.get('/auth/login', (req, res) => {
     response_type: "code",
     client_id: spotify_client_id,
     scope: scope,
-    redirect_uri: "http://127.0.0.1:3000/auth/callback",
+    redirect_uri: REDIRECT_URI,
     state: state
     })
 
     res.redirect('https://accounts.spotify.com/authorize/?' + auth_query_parameters.toString());
-})
-
-app.listen(port, () => {
-  console.log(`Listening at http://127.0.0.1:${port}`)
 })
 
 var generateRandomString = function (length) {
@@ -93,3 +90,6 @@ app.get('/auth/token', (req, res) => {
 })
 
 
+app.listen(PORT, '0.0.0.0', () => {
+    console.log(`Server listening on port ${PORT}`);
+});
