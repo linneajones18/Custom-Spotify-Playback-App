@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import './css/styles.css';
 import { getPaletteSync } from 'colorthief';
+import { supabase } from './supabaseClient';
 
 const track = {
     name: "",
@@ -13,14 +14,6 @@ const track = {
         { name: "" }
     ]
 }
-
-const images = require.context(
-    '../public/record-photos',
-    false,
-    /\.(png|jpe?g|gif|webp)$/
-);
-
-const recordPhotos = images.keys().map(images);
 
 function loadImg(url) {
     return new Promise((resolve, reject) => {
@@ -45,7 +38,11 @@ function WebPlayback(props) {
     const [palette, setPalette] = useState([]);
     const record = useRef(null);
     const playerRef = useRef(null);
+
     const [imageIndex, setImageIndex] = useState(0);
+    const [recordPhotos, setImageArray] = useState([]);
+    const [nextImageIndex, setNextImageIndex] = useState(0);
+    const [fade, setFade] = useState(false); 
 
     useEffect(() => {
         const script = document.createElement("script");
@@ -135,6 +132,7 @@ function WebPlayback(props) {
         };
     }, [props.token]);
 
+    // get colors from album cover with color thief
     useEffect(() => {
 
         async function getColors() {
@@ -155,11 +153,78 @@ function WebPlayback(props) {
         }
     }, [current_track]);
 
+    // get photos from supabase
     useEffect(() => {
-        if (current_track) {
-            setImageIndex(prevIndex => (prevIndex + 1) % recordPhotos.length);
-        }
+        const fetchImages = async () => {
+            const { data, error } = await supabase
+                .storage
+                .from('record-images')
+                .list('', {
+                    limit: 100,
+                    sortBy: {
+                        column: 'name',
+                        order: 'asc'
+                    }
+                });
+
+            if (error) {
+                console.error('Error fetching images:', error);
+                return;
+            }
+
+            const imageUrls = data
+                .filter(file => /\.(png|jpe?g|gif|webp)$/i.test(file.name))
+                .map(file => {
+                    const { data } = supabase
+                        .storage
+                        .from('record-images')
+                        .getPublicUrl(file.name);
+
+                    return data.publicUrl;
+                });
+
+            setImageArray(imageUrls);
+        };
+
+        fetchImages();
+    }, []);
+
+    // switch record photo with the song switch
+    useEffect(() => {
+        if (!current_track?.id || recordPhotos.length === 0 || fade) return;
+
+        const nextIndex = (imageIndex + 1) % recordPhotos.length;
+        const nextImage = new Image();
+
+        nextImage.onload = async () => {
+            try {
+                await nextImage.decode();
+                setNextImageIndex(nextIndex);
+                setFade(true);
+            } catch (error) {
+                console.error("Could not decode next image:", error);
+            }
+        };
+
+        nextImage.onerror = () => {
+            console.error("Failed to load next slideshow image");
+        };
+
+        nextImage.src = recordPhotos[nextIndex];
+
     }, [current_track?.id]);
+
+    // record photo fade ins
+    useEffect(() => {
+        if (!fade) return;
+
+        const timer = setTimeout(() => {
+            setImageIndex(nextImageIndex);
+            setFade(false);
+        }, 1500);
+
+        return () => clearTimeout(timer);
+    }, [fade, nextImageIndex]);
 
     
     if(is_active) {
@@ -172,7 +237,19 @@ function WebPlayback(props) {
                         <div id="player-container">
                             <div id="custom-record-graphic" ref={record}>
                                 <img id="record-disc" src='/record2.svg' alt="record disc"/>
-                                <img id="record-image" src={recordPhotos[imageIndex]} alt="Linnea and Aidan"/>
+                                <div className="record-photos-container">
+                                    <img
+                                        src={recordPhotos[imageIndex]}
+                                        className={`record-image ${fade ? 'fade-out' : 'visible'}`}
+                                        alt="Linnea and Aidan"
+                                    />
+
+                                    <img
+                                        src={recordPhotos[nextImageIndex]}
+                                        className={`record-image ${fade ? 'fade-in' : 'hidden'}`}
+                                        alt="Linnea and Aidan"
+                                    />
+                                </div>
                             </div>
 
                             <div id="button-container">

@@ -59,7 +59,7 @@ html, body {
     animation-play-state: running;
 }
 
-#record-disc, #record-image {
+#record-disc, .record-photos-container {
     grid-column: 1;
     grid-row: 1;
 }
@@ -70,22 +70,69 @@ html, body {
     z-index: 1;
 }
 
-#record-image {
+.record-photos-container {
+    display: grid;
+    place-items: center;
     align-self: center;
     width: 33%;
-    aspect-ratio: 1;
-    object-fit: cover;
-    border-radius: 50%;
+    height: 33%;
     z-index: 2;
     border: 2px solid white;
+    border-radius: 50%;
+    background-color: white;
+    overflow: hidden;
 }
+
+.record-image {
+    grid-column: 1;
+    grid-row: 1;
+    align-self: center;
+    border-radius: 50%;
+    width: 100%;
+    aspect-ratio: 1;
+    object-fit: cover;
+    z-index: 2;
+    border: 2px solid white;
+    transition: opacity 1.5s ease-in-out;
+}
+
+.record-image {
+    grid-column: 1;
+    grid-row: 1;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    border-radius: 50%;
+    transition: opacity 1.5s ease-in-out;
+}
+
+.record-image.visible {
+    opacity: 1;
+    z-index: 1;
+}
+
+.record-image.hidden {
+    opacity: 0;
+    z-index: 2;
+}
+
+.record-image.fade-out {
+    opacity: 0;
+    z-index: 1;
+}
+
+.record-image.fade-in {
+    opacity: 1;
+    z-index: 2;
+}
+
 
 #button-container {
     display: flex;
     gap: 10px;
 }
 
-.playback-btn {
+button {
     display: flex;
     justify-content: center;
     align-items: center;
@@ -103,7 +150,7 @@ html, body {
     color: white;
 }
 
-.playback-btn:hover {
+.playback-:hover {
     background-color: #443f4a;
 }
 
