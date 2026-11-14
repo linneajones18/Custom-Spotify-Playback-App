@@ -240,13 +240,13 @@ function WebPlayback(props) {
                                 <div className="record-photos-container">
                                     <img
                                         src={recordPhotos[imageIndex]}
-                                        className={`record-image ${fade ? 'fade-out' : 'visible'}`}
+                                        className="record-image current"
                                         alt="Linnea and Aidan"
                                     />
 
                                     <img
                                         src={recordPhotos[nextImageIndex]}
-                                        className={`record-image ${fade ? 'fade-in' : 'hidden'}`}
+                                        className={`record-image next ${fade ? 'fade-in' : ''}`}
                                         alt="Linnea and Aidan"
                                     />
                                 </div>
