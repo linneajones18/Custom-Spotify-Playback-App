@@ -132,6 +132,27 @@ function WebPlayback(props) {
         };
     }, [props.token]);
 
+
+    // space bar to pause/play keybind
+    useEffect(() => {
+        const handleKeyDown = (event) => {
+
+            if (event.key === ' ') {
+                event.preventDefault();
+
+                playerRef.current?.togglePlay().catch(error => console.error("Toggle error ", error))
+            }
+
+        };
+
+        window.addEventListener('keydown', handleKeyDown);
+
+        return () => {
+            window.removeEventListener('keydown', handleKeyDown);
+        };
+
+    }, []);
+
     // get colors from album cover with color thief
     useEffect(() => {
 
