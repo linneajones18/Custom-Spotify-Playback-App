@@ -17,6 +17,7 @@
 .env.production.local
 .env
 record-photos
+info.txt
 
 npm-debug.log*
 yarn-debug.log*
